@@ -80,4 +80,4 @@ composer config http-basic.your-registry.cargoman.io token YOUR_ACCESS_TOKEN
 composer require vendor/package
 ```
 
-Ready to dive deeper? Check out the [Getting Started](/docs/getting-started) guide.
+Ready to dive deeper? Check out the [Getting Started](/docs/getting-started/installation) guide.
