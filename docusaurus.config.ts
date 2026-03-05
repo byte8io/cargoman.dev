@@ -40,7 +40,6 @@ const config: Config = {
         docs: {
           sidebarPath: './sidebars.ts',
           routeBasePath: 'docs',
-          editUrl: 'https://github.com/byte8/cargoman/edit/main/docs/',
         },
         blog: {
           showReadingTime: true,
@@ -51,7 +50,6 @@ const config: Config = {
             type: ['rss', 'atom'],
             xslt: true,
           },
-          editUrl: 'https://github.com/byte8/cargoman/edit/main/docs/',
         },
         theme: {
           customCss: './src/css/custom.css',
@@ -85,12 +83,6 @@ const config: Config = {
           to: '/blog',
           label: 'Blog',
           position: 'left',
-        },
-        {
-          href: 'https://github.com/byte8/cargoman',
-          position: 'right',
-          className: 'header-github-link',
-          'aria-label': 'GitHub repository',
         },
       ],
     },
@@ -139,8 +131,8 @@ const config: Config = {
               to: '/blog',
             },
             {
-              label: 'GitHub',
-              href: 'https://github.com/byte8/cargoman',
+              label: 'Changelog',
+              to: '/docs/changelog',
             },
           ],
         },
