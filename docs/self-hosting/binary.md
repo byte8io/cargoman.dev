@@ -47,10 +47,16 @@ BASE_URL=https://packages.example.com
 STORAGE_BACKEND=filesystem
 STORAGE_PATH=/var/lib/cargoman/packages
 RUST_LOG=info
+
+# For Pro edition (requires license key)
+# EDITION=pro
+# LICENSE_KEY=your-license-key
 EOF
 
 sudo chmod 600 /etc/cargoman/.env
 ```
+
+See the [Editions guide](/docs/guides/editions) for edition-specific configuration.
 
 ## Database Setup
 

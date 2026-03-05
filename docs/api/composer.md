@@ -67,6 +67,34 @@ GET /dist/{vendor}/{package}/{version}.zip
 
 Returns the package archive (zip file).
 
+### Security Advisories
+
+```http
+GET /security-advisories.json
+GET /api/security-advisories/{vendor}/{package}.json
+```
+
+Returns known security advisories for packages. Integrates with OSV, GitHub Security Advisory, and PHP Security Advisory databases. Available on Pro edition and higher.
+
+### Proxy Archive (Packagist Mirror)
+
+```http
+GET /dist-proxy/{vendor}/{package}/{version}/{reference}.zip
+```
+
+Serves cached Packagist archives through the private proxy. Available on Pro edition and higher. See the [Packagist Proxy guide](/docs/guides/packagist-proxy) for configuration.
+
+## Custom Response Headers
+
+Cargoman includes bandwidth and storage tracking headers on archive downloads:
+
+| Header | Description |
+|--------|-------------|
+| `X-Bandwidth-Used` | Bandwidth consumed this month (bytes) |
+| `X-Bandwidth-Limit` | Monthly bandwidth limit (bytes, 0 = unlimited) |
+| `X-Storage-Used` | Storage consumed (bytes) |
+| `X-Storage-Limit` | Storage limit (bytes, 0 = unlimited) |
+
 ## Authentication
 
 Composer uses HTTP Basic Auth. Configure your credentials:
@@ -135,6 +163,7 @@ The Composer endpoints enforce customer access:
 - Version constraints are enforced (e.g., `^2.0` only shows 2.x versions)
 - Frozen customers only see their frozen versions
 - Suspended/expired customers receive 403 errors
+- Token package scopes further restrict visibility
 
 ## Error Responses
 
@@ -157,7 +186,7 @@ accessed: HTTP/1.1 401 Unauthorized
 Access denied to package vendor/package
 ```
 
-**Solution**: Customer doesn't have access to this package.
+**Solution**: Customer doesn't have access to this package, or the token scope doesn't include it.
 
 ### 404 Not Found
 
@@ -205,4 +234,4 @@ install:
 
 - [REST API Reference](/docs/api/rest)
 - [Token management](/docs/guides/tokens)
-- [Customer management](/docs/guides/customers)
+- [Vulnerability scanning](/docs/guides/vulnerability-scanning)

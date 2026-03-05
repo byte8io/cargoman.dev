@@ -10,15 +10,15 @@ Managed private Composer registry with zero infrastructure to manage.
 
 - **Instant Setup**: Your registry is ready in seconds
 - **Automatic TLS**: HTTPS enabled by default
-- **Global CDN**: Fast downloads worldwide
+- **Global CDN**: Fast downloads worldwide (Cloud and Enterprise plans)
 - **Automatic Backups**: Daily backups with 30-day retention
-- **99.9% Uptime SLA**: Enterprise-grade reliability
 - **Zero Maintenance**: We handle updates and security patches
+- **Multi-Tenant**: Isolated registry per customer
 
 ## Getting Started
 
 1. **Sign up** at [cargoman.io](https://cargoman.io)
-2. **Create a registry** from your dashboard
+2. **Choose a plan** — start with a 14-day free trial
 3. **Add packages** from your Git repositories
 4. **Configure Composer** with your registry URL
 
@@ -33,10 +33,11 @@ https://your-name.packages.cargoman.io
 - Add packages from GitHub, GitLab, or Bitbucket
 - View all versions and download statistics
 - Trigger manual syncs
+- Monorepo support
 
 ### Customer Management
 - Create and manage customers
-- Generate access tokens
+- Generate scoped access tokens
 - View usage analytics
 
 ### Billing
@@ -53,28 +54,29 @@ Cloud registries include full API access:
 curl https://your-name.packages.cargoman.io/api/v1/packages \
   -H "Authorization: Bearer $ADMIN_TOKEN"
 
-# GraphQL
+# GraphQL (Pro, Cloud, Enterprise)
 curl https://your-name.packages.cargoman.io/graphql \
   -H "Authorization: Bearer $ADMIN_TOKEN" \
   -d '{"query": "{ packages { name } }"}'
 ```
 
-## Regions
+## Plans
 
-Cargoman Cloud is available in:
+| Feature | Community | Pro | Cloud | Enterprise |
+|---------|-----------|-----|-------|------------|
+| **Price** | Free | $24/mo | $49/mo | $499/mo |
+| **Storage** | 2 GB | 50 GB | 100 GB | Unlimited |
+| **Bandwidth** | 10 GB/mo | 500 GB/mo | ~1 TB/mo | Unlimited |
+| **Team Seats** | 3 | Unlimited | Unlimited | Unlimited |
+| **Support** | Community | Email | Priority | Dedicated + SLA |
 
-| Region | Location | Endpoint |
-|--------|----------|----------|
-| US | Virginia | `us.packages.cargoman.io` |
-| EU | Frankfurt | `eu.packages.cargoman.io` |
-| APAC | Singapore | `apac.packages.cargoman.io` |
-
-Select your region during registry creation for optimal performance.
+See [Plans & Pricing](/docs/cloud/plans) for the full comparison.
 
 ## Support
 
-- **Starter/Scale**: Email support
-- **Business**: Priority email support
+- **Community**: Community forums and documentation
+- **Pro**: Email support
+- **Cloud**: Priority email support
 - **Enterprise**: Dedicated support with SLA
 
 ## Next Steps

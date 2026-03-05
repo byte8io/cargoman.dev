@@ -176,6 +176,21 @@ http {
 }
 ```
 
+## Edition Configuration
+
+To run a Pro or Enterprise edition, add edition and license configuration:
+
+```yaml
+services:
+  cargoman:
+    environment:
+      EDITION: pro
+      LICENSE_KEY: ${LICENSE_KEY}
+      # ... other config
+```
+
+See the [Editions guide](/docs/guides/editions) for details on features per edition.
+
 ## Health Checks
 
 The container includes health checks:
@@ -185,7 +200,7 @@ The container includes health checks:
 curl http://localhost:8080/health
 
 # Response
-{"status": "healthy", "version": "0.1.0"}
+{"status": "healthy", "version": "1.0.0"}
 ```
 
 ## Updating

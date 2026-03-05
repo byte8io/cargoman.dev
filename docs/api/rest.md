@@ -4,7 +4,7 @@ sidebar_position: 2
 
 # REST API Reference
 
-Complete reference for the Cargoman REST API.
+Complete reference for the Cargoman REST API. All endpoints require admin authentication via the `Authorization: Bearer <ADMIN_TOKEN>` header unless noted otherwise.
 
 ## Customers
 
@@ -89,28 +89,99 @@ POST /api/v1/customers/{id}/freeze
 
 ---
 
-## Tokens
+## Tokens (Scoped)
 
-### Regenerate Token
+Cargoman uses a multi-token scoped system. Each customer can have multiple tokens with different permissions.
+
+### Create Token
 
 ```http
-POST /api/v1/customers/{id}/token/regenerate
+POST /api/v1/customers/{id}/tokens
 ```
-
-Response:
 
 ```json
 {
-  "token": "tok_new_xyz",
-  "created_at": "2024-01-15T10:30:00Z"
+  "name": "CI Deploy Token",
+  "scope": "download",
+  "package_scopes": ["vendor/*"],
+  "expires_at": "2025-12-31T23:59:59Z"
 }
+```
+
+**Scopes:**
+
+| Scope | Description |
+|-------|-------------|
+| `admin` | Full admin access (default) |
+| `developer` | Download + upload packages |
+| `download` | Read-only Composer downloads |
+| `webhook` | Webhook access only |
+
+**Package scopes** restrict token access to specific packages. Supports glob patterns (e.g., `vendor/*`, `vendor/specific-package`).
+
+Response (token is shown only once):
+
+```json
+{
+  "token": {
+    "id": "tok_uuid",
+    "name": "CI Deploy Token",
+    "scope": "download",
+    "package_scopes": ["vendor/*"],
+    "expires_at": "2025-12-31T23:59:59Z",
+    "created_at": "2024-01-15T10:30:00Z"
+  },
+  "plain_token": "tok_abc123xyz",
+  "composer_auth": {
+    "username": "token",
+    "password": "tok_abc123xyz",
+    "repository_url": "https://packages.example.com"
+  }
+}
+```
+
+### List Tokens
+
+```http
+GET /api/v1/customers/{id}/tokens
+```
+
+### Get Token
+
+```http
+GET /api/v1/customers/{id}/tokens/{token_id}
 ```
 
 ### Revoke Token
 
 ```http
+DELETE /api/v1/customers/{id}/tokens/{token_id}
+```
+
+### Rotate Token
+
+Generate a new token value while keeping the same settings (name, scope, package scopes):
+
+```http
+POST /api/v1/customers/{id}/tokens/{token_id}/rotate
+```
+
+### Legacy Token Endpoints
+
+For backward compatibility, the original single-token endpoints are still available:
+
+```http
+POST   /api/v1/customers/{id}/token/regenerate
 DELETE /api/v1/customers/{id}/token
 ```
+
+### Issue JWT
+
+```http
+POST /api/v1/customers/{id}/jwt
+```
+
+Requires `JWT_SECRET` to be configured. Returns a signed JWT for the customer.
 
 ---
 
@@ -122,20 +193,7 @@ DELETE /api/v1/customers/{id}/token
 GET /api/v1/customers/{id}/packages
 ```
 
-### Grant Package Access
-
-```http
-POST /api/v1/customers/{id}/packages
-```
-
-```json
-{
-  "package": "vendor/package",
-  "constraint": "^2.0"
-}
-```
-
-### Update Package Access
+### Replace Package Access
 
 ```http
 PUT /api/v1/customers/{id}/packages
@@ -150,10 +208,29 @@ PUT /api/v1/customers/{id}/packages
 }
 ```
 
-### Revoke Package Access
+### Add Package Access
 
 ```http
-DELETE /api/v1/customers/{id}/packages/{package}
+POST /api/v1/customers/{id}/packages
+```
+
+```json
+{
+  "package": "vendor/package",
+  "constraint": "^2.0"
+}
+```
+
+### Remove Package Access
+
+```http
+DELETE /api/v1/customers/{id}/packages/{vendor}/{name}
+```
+
+### Reverse Lookup: Customers by Package
+
+```http
+GET /api/v1/packages/{vendor}/{name}/customers
 ```
 
 ---
@@ -183,78 +260,254 @@ POST /api/v1/packages
 ### Get Package
 
 ```http
-GET /api/v1/packages/{name}
-```
-
-### Sync Package
-
-```http
-POST /api/v1/packages/{name}/sync
+GET /api/v1/packages/{vendor}/{name}
 ```
 
 ### Delete Package
 
 ```http
-DELETE /api/v1/packages/{name}
+DELETE /api/v1/packages/{vendor}/{name}
+```
+
+### Sync Package
+
+```http
+POST /api/v1/packages/{vendor}/{name}/sync
+```
+
+### Yank Version
+
+Remove a version from being installable (does not delete the archive):
+
+```http
+POST /api/v1/packages/{vendor}/{name}/yank/{version}
+```
+
+### Unyank Version
+
+```http
+POST /api/v1/packages/{vendor}/{name}/unyank/{version}
+```
+
+### Deprecate Version
+
+```http
+POST /api/v1/packages/{vendor}/{name}/deprecate/{version}
+```
+
+### Package README
+
+```http
+GET /api/v1/packages/{vendor}/{name}/readme
+```
+
+### Validate Package
+
+```http
+POST /api/v1/packages/{vendor}/{name}/validate
+```
+
+### Admin Download
+
+```http
+GET /api/v1/packages/{vendor}/{name}/download/{version}
+```
+
+### Webhook Deliveries
+
+```http
+GET /api/v1/packages/{vendor}/{name}/webhook-deliveries
+```
+
+### Monorepo Support
+
+```http
+GET  /api/v1/packages/{vendor}/{name}/monorepo
+POST /api/v1/packages/{vendor}/{name}/monorepo/sync
+GET  /api/v1/packages/{vendor}/{name}/monorepo/children
 ```
 
 ---
 
-## Bundles
+## Collections
 
-Bundles group packages for easier access management.
+Collections group packages for easier access management (replaces the old "bundles" concept).
 
-### List Bundles
+### List Collections
 
 ```http
-GET /api/v1/bundles
+GET /api/v1/collections
 ```
 
-### Create Bundle
+### Create Collection
 
 ```http
-POST /api/v1/bundles
+POST /api/v1/collections
 ```
 
 ```json
 {
-  "name": "enterprise",
+  "name": "Enterprise Suite",
+  "slug": "enterprise",
   "packages": ["vendor/core", "vendor/analytics", "vendor/support"]
 }
 ```
 
-### Update Bundle
+### Get Collection
 
 ```http
-PATCH /api/v1/bundles/{name}
+GET /api/v1/collections/{slug}
 ```
 
-### Delete Bundle
+### Update Collection
 
 ```http
-DELETE /api/v1/bundles/{name}
+PATCH /api/v1/collections/{slug}
+```
+
+### Delete Collection
+
+```http
+DELETE /api/v1/collections/{slug}
 ```
 
 ---
 
-## Webhooks
+## Statistics
 
-### GitHub Webhook
+```http
+GET /api/v1/stats
+GET /api/v1/stats/packages/{vendor}/{name}
+GET /api/v1/stats/packages/{vendor}/{name}/versions/{version}
+GET /api/v1/stats/daily
+```
+
+---
+
+## Tasks
+
+```http
+GET  /api/v1/tasks
+GET  /api/v1/tasks/pending
+GET  /api/v1/tasks/running
+GET  /api/v1/tasks/failed
+POST /api/v1/tasks
+POST /api/v1/tasks/sync-all
+POST /api/v1/tasks/cleanup
+```
+
+---
+
+## Vulnerabilities
+
+Requires Pro edition or higher.
+
+```http
+GET  /api/v1/vulnerabilities
+GET  /api/v1/vulnerabilities/{id}
+POST /api/v1/vulnerabilities/scan
+```
+
+---
+
+## Tenants
+
+Available in Cloud edition (multi-tenant mode) only.
+
+```http
+GET    /api/v1/tenants
+POST   /api/v1/tenants
+GET    /api/v1/tenants/{id}
+PATCH  /api/v1/tenants/{id}
+DELETE /api/v1/tenants/{id}
+POST   /api/v1/tenants/{id}/suspend
+POST   /api/v1/tenants/{id}/reactivate
+POST   /api/v1/tenants/{id}/change-plan
+```
+
+### Tenant Usage & Notifications
+
+```http
+GET /api/v1/tenants/{id}/usage
+GET /api/v1/tenants/{id}/notifications
+```
+
+---
+
+## OAuth Connections
+
+```http
+POST /api/v1/oauth/gitlab/initiate
+GET  /api/v1/oauth/gitlab/status
+POST /api/v1/oauth/gitlab/disconnect
+POST /api/v1/oauth/bitbucket/initiate
+GET  /api/v1/oauth/bitbucket/status
+POST /api/v1/oauth/bitbucket/disconnect
+GET  /api/v1/oauth/connections
+```
+
+---
+
+## GitHub App
+
+```http
+GET  /api/v1/github-app/status
+GET  /api/v1/github-app/install-url
+GET  /api/v1/github-app/installations
+POST /api/v1/github-app/installations/claim
+GET  /api/v1/github-app/installations/{id}
+POST /api/v1/github-app/installations/{id}/sync
+GET  /api/v1/github-app/installations/{id}/repositories
+GET  /api/v1/github-app/installations/by-github-id/{id}
+```
+
+---
+
+## License
+
+```http
+GET /api/v1/license
+```
+
+Returns current license information (Pro/Enterprise editions).
+
+---
+
+## Audit Logs
+
+```http
+GET /api/v1/audit
+```
+
+Returns audit log entries. Retained for 90 days by default (configurable via `AUDIT_LOG_RETENTION_DAYS`).
+
+---
+
+## Proxy
+
+Packagist proxy/mirror management (Pro edition or higher).
+
+```http
+GET  /api/v1/proxy/status
+GET  /api/v1/proxy/stats
+POST /api/v1/proxy/purge
+POST /api/v1/proxy/freeze/{vendor}/{name}
+POST /api/v1/proxy/unfreeze/{vendor}/{name}
+GET  /api/v1/proxy/alerts
+```
+
+---
+
+## Webhooks (Git Providers)
+
+These endpoints do **not** require admin auth — they use signature verification.
 
 ```http
 POST /api/webhooks/github
-```
-
-### GitLab Webhook
-
-```http
 POST /api/webhooks/gitlab
-```
-
-### Bitbucket Webhook
-
-```http
 POST /api/webhooks/bitbucket
+POST /api/webhooks/github-app
+POST /api/webhooks/stripe
 ```
 
 ---
@@ -268,5 +521,6 @@ POST /api/webhooks/bitbucket
 | `UNAUTHORIZED` | 401 | Invalid or missing token |
 | `FORBIDDEN` | 403 | Insufficient permissions |
 | `CONFLICT` | 409 | Resource already exists |
+| `FEATURE_NOT_AVAILABLE` | 403 | Feature not available in current edition |
 | `RATE_LIMITED` | 429 | Too many requests |
 | `INTERNAL_ERROR` | 500 | Server error |

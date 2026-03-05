@@ -4,15 +4,16 @@ sidebar_position: 4
 
 # Stripe Integration
 
-Automate customer lifecycle based on Stripe subscription events.
+Automate customer lifecycle based on Stripe subscription events. The Stripe webhook handler runs in the **web app** (Next.js), not in the registry.
 
 ## Overview
 
-Integrate Cargoman with Stripe to automatically:
-- Create customers when subscriptions start
-- Suspend customers when payments fail
-- Reactivate customers when payments succeed
-- Freeze or expire customers when subscriptions end
+Cargoman's web app integrates with Stripe to automatically:
+- Provision tenants when customers subscribe to Cloud plans
+- Generate license keys for Pro/Enterprise subscriptions
+- Suspend tenants when payments fail
+- Handle plan upgrades and downgrades
+- Send trial ending reminders
 
 ## Setup
 
@@ -21,124 +22,88 @@ Integrate Cargoman with Stripe to automatically:
 1. Go to [Stripe Dashboard](https://dashboard.stripe.com/webhooks)
 2. Click **Add endpoint**
 3. Configure:
-   - **Endpoint URL**: `https://packages.example.com/api/webhooks/stripe`
+   - **Endpoint URL**: `https://cargoman.io/api/stripe/webhook` (your web app URL)
    - **Events to send**: Select events below
 4. Copy the **Signing secret**
 
-### 2. Configure Cargoman
+:::note
+The webhook URL points to the **web app** (Next.js), not the registry. The web app handles subscription logic and provisions tenants via the registry API.
+:::
+
+### 2. Configure Environment
 
 ```bash
+# Web app (.env)
+STRIPE_SECRET_KEY=sk_xxxxx
 STRIPE_WEBHOOK_SECRET=whsec_xxxxx
+STRIPE_PUBLISHABLE_KEY=pk_xxxxx
+
+# Price IDs (one for each billing interval)
+STRIPE_PRICE_PRO_MONTHLY=price_xxxxx
+STRIPE_PRICE_PRO_YEARLY=price_xxxxx
+STRIPE_PRICE_CLOUD_MONTHLY=price_xxxxx
+STRIPE_PRICE_CLOUD_YEARLY=price_xxxxx
 ```
 
 ### 3. Select Events
 
 Configure these events in Stripe:
 
-| Event | Cargoman Action |
-|-------|-----------------|
-| `customer.subscription.created` | Create customer |
-| `customer.subscription.updated` | Update status |
-| `customer.subscription.deleted` | Freeze/expire customer |
-| `invoice.paid` | Reactivate if suspended |
-| `invoice.payment_failed` | Suspend customer |
+| Event | Action |
+|-------|--------|
+| `checkout.session.completed` | Create subscription, provision tenant (Cloud) or generate license (Pro) |
+| `customer.subscription.updated` | Handle plan changes, upgrades/downgrades |
+| `customer.subscription.deleted` | Suspend tenant, cancel subscription |
+| `invoice.payment_failed` | Mark subscription past_due, suspend tenant |
+| `customer.subscription.trial_will_end` | Send trial ending reminder (3 days before) |
 
-## Customer Mapping
+## Subscription Flow
 
-Link Stripe customers to Cargoman using `external_id`:
+### Checkout Completed
 
-```json
-// Stripe customer ID -> Cargoman external_id
-{
-  "external_id": "cus_abc123"
-}
-```
+When a customer completes Stripe Checkout:
 
-### Create Customer via API
+1. Subscription record created in the web database
+2. Organization created/updated
+3. **Cloud plans**: Tenant provisioned in the registry (`POST /api/v1/tenants`)
+4. **Pro/Enterprise plans**: License key (JWT) generated and emailed
+5. Confirmation email sent
 
-When a Stripe subscription is created:
+### Plan Changes
 
-```bash
-curl -X POST https://packages.example.com/api/v1/customers \
-  -H "Authorization: Bearer $ADMIN_TOKEN" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "name": "Customer Name",
-    "email": "customer@example.com",
-    "external_id": "cus_abc123"
-  }'
-```
+The `customer.subscription.updated` event handles:
 
-### Lookup Customer
+| Scenario | Action |
+|----------|--------|
+| Reactivate from suspended | Reactivate tenant |
+| Upgrade to Cloud (no tenant) | Provision new tenant |
+| Downgrade from Cloud | Suspend tenant |
+| Payment becomes `past_due` | Suspend tenant |
 
-Find customer by Stripe ID:
+### Subscription Deletion
 
-```bash
-curl https://packages.example.com/api/v1/customers/by-external/cus_abc123 \
-  -H "Authorization: Bearer $ADMIN_TOKEN"
-```
+When a subscription is canceled/deleted:
+- Subscription status set to `canceled`
+- Cloud tenant suspended (not deleted)
 
-## Webhook Handler Example
+### Status Mapping
 
-```rust
-// Pseudo-code for handling Stripe webhooks
-async fn handle_stripe_webhook(event: StripeEvent) -> Result<()> {
-    match event.type_ {
-        "customer.subscription.created" => {
-            let sub = event.data.object;
-            let customer = create_cargoman_customer(
-                sub.customer,
-                sub.metadata.get("email"),
-            ).await?;
+| Stripe Status | Internal Status |
+|---------------|-----------------|
+| `active` | `active` |
+| `trialing` | `trialing` |
+| `past_due` | `past_due` |
+| `unpaid` | `past_due` |
+| `incomplete` | `past_due` |
+| `canceled` | `canceled` |
+| `incomplete_expired` | `canceled` |
+| `paused` | `canceled` |
 
-            // Grant package access based on plan
-            grant_plan_access(&customer, &sub.items).await?;
-        }
+## Trial Configuration
 
-        "invoice.payment_failed" => {
-            let invoice = event.data.object;
-            suspend_customer_by_stripe_id(
-                invoice.customer,
-                "Payment failed",
-            ).await?;
-        }
+New subscriptions include a **14-day free trial** by default. This is configurable via `DEFAULT_TRIAL_PERIOD_DAYS` in `stripe-service.ts`. Set to `0` to disable trials.
 
-        "invoice.paid" => {
-            let invoice = event.data.object;
-            reactivate_customer_by_stripe_id(invoice.customer).await?;
-        }
-
-        "customer.subscription.deleted" => {
-            let sub = event.data.object;
-            // Option 1: Freeze to current versions
-            freeze_customer_by_stripe_id(sub.customer).await?;
-            // Option 2: Expire completely
-            // expire_customer_by_stripe_id(sub.customer).await?;
-        }
-
-        _ => {}
-    }
-    Ok(())
-}
-```
-
-## Plan to Package Mapping
-
-Map Stripe products/prices to package bundles:
-
-```json
-{
-  "price_basic": ["vendor/core"],
-  "price_pro": ["vendor/core", "vendor/pro-features"],
-  "price_enterprise": ["vendor/core", "vendor/pro-features", "vendor/enterprise"]
-}
-```
-
-Configure in environment:
-
-```bash
-STRIPE_PRICE_MAPPING='{"price_xxx":["vendor/core"],"price_yyy":["vendor/core","vendor/pro"]}'
-```
+A reminder email is sent 3 days before the trial ends.
 
 ## Testing
 
@@ -151,41 +116,55 @@ brew install stripe/stripe-cli/stripe
 # Login
 stripe login
 
-# Forward webhooks to local server
-stripe listen --forward-to localhost:8080/api/webhooks/stripe
+# Forward webhooks to local web app
+stripe listen --forward-to localhost:3000/api/stripe/webhook
 
 # Trigger test events
-stripe trigger customer.subscription.created
+stripe trigger checkout.session.completed
+stripe trigger customer.subscription.updated
+stripe trigger invoice.payment_failed
 ```
 
 ## Subscription Lifecycle
 
 ```
 ┌─────────────────┐
-│   Subscription  │
-│     Created     │
+│   Checkout       │
+│   Completed      │
 └────────┬────────┘
          │
          ▼
 ┌─────────────────┐     ┌─────────────────┐
-│     Active      │◄────│   Invoice Paid  │
+│     Active /    │◄────│  Subscription   │
+│    Trialing     │     │   Updated       │
 └────────┬────────┘     └─────────────────┘
          │
          │ Payment Failed
          ▼
 ┌─────────────────┐
-│    Suspended    │
-│  (Grace Period) │
+│    Past Due     │
+│  (Tenant        │
+│   Suspended)    │
 └────────┬────────┘
          │
          │ Subscription Deleted
          ▼
 ┌─────────────────┐
-│ Frozen/Expired  │
+│    Canceled     │
 └─────────────────┘
 ```
+
+## Email Notifications
+
+| Event | Email Sent |
+|-------|------------|
+| Checkout completed | Subscription confirmation |
+| Cloud tenant provisioned | Welcome email with registry URL |
+| Pro/Enterprise subscription | License key email |
+| Payment failed | Payment failure notification |
+| Trial ending (3 days) | Trial ending reminder |
 
 ## Next Steps
 
 - [Customer management](/docs/guides/customers)
-- [Subscription lifecycle](/docs/guides/subscriptions)
+- [Plans & pricing](/docs/cloud/plans)

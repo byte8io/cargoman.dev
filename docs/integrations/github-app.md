@@ -209,6 +209,27 @@ GET /api/v1/github-app/installations
 }
 ```
 
+### Claim Installation
+
+Claim a pending installation (link it to a registry account):
+
+```bash
+POST /api/v1/github-app/installations/claim
+
+# Request:
+{
+  "installation_id": 12345678
+}
+```
+
+### Sync Installation
+
+Trigger a sync of all repositories from an installation:
+
+```bash
+POST /api/v1/github-app/installations/{id}/sync
+```
+
 ### List Accessible Repositories
 
 ```bash
@@ -226,6 +247,12 @@ GET /api/v1/github-app/installations/{id}/repositories
     }
   ]
 }
+```
+
+### Get Installation by GitHub ID
+
+```bash
+GET /api/v1/github-app/installations/by-github-id/{github_installation_id}
 ```
 
 ## Webhook Events

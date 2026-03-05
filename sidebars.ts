@@ -21,8 +21,12 @@ const sidebars: SidebarsConfig = {
         'guides/customers',
         'guides/tokens',
         'guides/subscriptions',
+        'guides/editions',
+        'guides/vulnerability-scanning',
+        'guides/packagist-proxy',
       ],
     },
+    'cli',
     {
       type: 'category',
       label: 'API Reference',
@@ -57,6 +61,7 @@ const sidebars: SidebarsConfig = {
       label: 'Integrations',
       items: [
         'integrations/github',
+        'integrations/github-app',
         'integrations/gitlab',
         'integrations/bitbucket',
         'integrations/stripe',

@@ -49,12 +49,17 @@ For multiple repositories, use organization-level webhooks:
 2. Add webhook with the same configuration
 3. All repositories will trigger syncs
 
-## GitHub App (Coming Soon)
+## GitHub App
 
-For easier setup, we're building a GitHub App that:
+For easier setup, use the [GitHub App integration](/docs/integrations/github-app) instead of manual webhooks. The GitHub App:
+
 - Automatically configures webhooks
 - Provides repository selection UI
 - Handles authentication securely
+- Offers higher API rate limits (5,000/hour per installation)
+- Auto-refreshes tokens (no manual management)
+
+See the [GitHub App guide](/docs/integrations/github-app) for setup instructions.
 
 ## Troubleshooting
 
@@ -94,12 +99,7 @@ For private repositories, configure Git authentication:
 GIT_AUTH_TOKEN=ghp_xxxx
 ```
 
-Or use SSH keys (self-hosted only):
-
-```bash
-# Add SSH key to ~/.ssh/id_rsa
-# Ensure it has read access to repositories
-```
+Or use the GitHub App for automatic credential management (recommended).
 
 ## Example Workflow
 
@@ -127,5 +127,6 @@ jobs:
 
 ## Next Steps
 
+- [GitHub App integration](/docs/integrations/github-app)
 - [GitLab integration](/docs/integrations/gitlab)
 - [Bitbucket integration](/docs/integrations/bitbucket)

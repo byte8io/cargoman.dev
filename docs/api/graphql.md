@@ -4,7 +4,7 @@ sidebar_position: 3
 
 # GraphQL API
 
-The GraphQL API provides flexible queries for complex data needs.
+The GraphQL API provides flexible queries for complex data needs. Available on Pro, Cloud, and Enterprise editions.
 
 ## Endpoint
 
@@ -20,7 +20,7 @@ In development, access the GraphQL Playground at:
 GET /graphql/playground
 ```
 
-Enable with `GRAPHQL_PLAYGROUND=true`.
+Enable with `GRAPHQL_PLAYGROUND=true` and `GRAPHQL_INTROSPECTION=true`.
 
 ## Authentication
 
@@ -54,12 +54,31 @@ type Query {
     pagination: Pagination
   ): PackageConnection!
 
-  # Bundles
-  bundle(name: String!): Bundle
-  bundles: [Bundle!]!
+  # Collections
+  collection(slug: String!): Collection
+  collections: [Collection!]!
 
   # Analytics
   downloadStats(packageName: String, period: Period): DownloadStats!
+
+  # Vulnerabilities (Pro+)
+  vulnerabilities(packageName: String): [Vulnerability!]!
+
+  # Proxy (Pro+)
+  proxyStatus: ProxyStatus!
+
+  # Audit Logs (Pro+)
+  auditLogs(filter: AuditLogFilter, pagination: Pagination): AuditLogConnection!
+
+  # Statistics
+  stats: RegistryStats!
+
+  # GitHub App
+  githubAppStatus: GitHubAppStatus!
+  githubAppInstallations: [GitHubAppInstallation!]!
+
+  # OAuth Connections
+  oauthConnections: [OAuthConnection!]!
 }
 ```
 
@@ -75,9 +94,14 @@ type Mutation {
   reactivateCustomer(id: ID!): Customer!
   freezeCustomer(id: ID!, versions: [VersionFreeze!]): Customer!
 
-  # Tokens
+  # Tokens (Scoped)
+  createToken(customerId: ID!, input: CreateTokenInput!): ScopedTokenCreatedResponse!
+  revokeToken(customerId: ID!, tokenId: ID!): Boolean!
+  rotateToken(customerId: ID!, tokenId: ID!): ScopedTokenCreatedResponse!
+
+  # Legacy Token Operations
   regenerateToken(customerId: ID!): TokenResponse!
-  revokeToken(customerId: ID!): Boolean!
+  revokeAllTokens(customerId: ID!): Boolean!
 
   # Package Access
   grantPackageAccess(
@@ -91,10 +115,13 @@ type Mutation {
   syncPackage(name: String!): Package!
   deletePackage(name: String!): Boolean!
 
-  # Bundles
-  createBundle(input: CreateBundleInput!): Bundle!
-  updateBundle(name: String!, input: UpdateBundleInput!): Bundle!
-  deleteBundle(name: String!): Boolean!
+  # Collections
+  createCollection(input: CreateCollectionInput!): Collection!
+  updateCollection(slug: String!, input: UpdateCollectionInput!): Collection!
+  deleteCollection(slug: String!): Boolean!
+
+  # GitHub App
+  removeGitHubAppInstallation(id: ID!): Boolean!
 }
 ```
 
@@ -106,6 +133,18 @@ type Subscription {
   customerActivity(customerId: ID): CustomerActivityEvent!
 }
 ```
+
+## Complexity Limiting
+
+Query complexity is limited per edition to prevent abuse:
+
+| Edition | Max Complexity |
+|---------|---------------|
+| Pro | 500 |
+| Cloud | 1000 |
+| Enterprise | Unlimited |
+
+Deeply nested queries that exceed the limit will be rejected with a `QUERY_TOO_COMPLEX` error.
 
 ## Example Queries
 
@@ -122,9 +161,6 @@ query GetCustomer($id: ID!) {
       name
       constraint
       grantedAt
-    }
-    token {
-      createdAt
     }
   }
 }
@@ -155,22 +191,6 @@ query ListPackages($filter: PackageFilter) {
 }
 ```
 
-### Create Customer and Grant Access
-
-```graphql
-mutation CreateAndGrant($input: CreateCustomerInput!, $packages: [PackageAccessInput!]!) {
-  createCustomer(input: $input) {
-    id
-    token
-  }
-  grantPackageAccess(customerId: $id, packages: $packages) {
-    packages {
-      name
-    }
-  }
-}
-```
-
 ### Download Statistics
 
 ```graphql
@@ -189,6 +209,56 @@ query Stats {
 }
 ```
 
+### Vulnerability Scan Results
+
+```graphql
+query Vulnerabilities($packageName: String!) {
+  vulnerabilities(packageName: $packageName) {
+    id
+    advisory
+    severity
+    affectedVersions
+    patchedVersions
+    description
+  }
+}
+```
+
+### Collections
+
+```graphql
+query {
+  collections {
+    slug
+    name
+    packages {
+      name
+      latestVersion
+    }
+  }
+}
+```
+
+### GitHub App Status
+
+```graphql
+query {
+  githubAppStatus {
+    configured
+    appId
+    appSlug
+  }
+
+  githubAppInstallations {
+    id
+    accountLogin
+    accountType
+    repositorySelection
+    status
+  }
+}
+```
+
 ## Types
 
 ### Customer
@@ -201,7 +271,6 @@ type Customer {
   externalId: String
   status: CustomerStatus!
   packages: [PackageAccess!]!
-  token: Token
   createdAt: DateTime!
   updatedAt: DateTime!
 }
@@ -226,6 +295,18 @@ type Package {
   latestVersion: String
   syncedAt: DateTime
   createdAt: DateTime!
+}
+```
+
+### Collection
+
+```graphql
+type Collection {
+  slug: String!
+  name: String!
+  packages: [Package!]!
+  createdAt: DateTime!
+  updatedAt: DateTime!
 }
 ```
 
