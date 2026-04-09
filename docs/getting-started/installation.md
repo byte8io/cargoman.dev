@@ -27,7 +27,7 @@ docker run -d \
   -e DATABASE_URL=postgresql://user:pass@host:5432/cargoman \
   -e ADMIN_TOKEN=your-secure-token \
   -v /var/lib/cargoman:/data \
-  ghcr.io/byte8/cargoman:latest
+  ghcr.io/byte8io/cargoman:latest
 ```
 
 ### Docker Compose
@@ -37,7 +37,7 @@ version: '3.8'
 
 services:
   cargoman:
-    image: ghcr.io/byte8/cargoman:latest
+    image: ghcr.io/byte8io/cargoman:latest
     ports:
       - "8080:8080"
     environment:

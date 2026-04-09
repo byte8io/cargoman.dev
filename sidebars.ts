@@ -52,7 +52,6 @@ const sidebars: SidebarsConfig = {
       label: 'Cloud',
       items: [
         'cloud/overview',
-        'cloud/plans',
         'cloud/custom-domain',
       ],
     },
@@ -64,7 +63,6 @@ const sidebars: SidebarsConfig = {
         'integrations/github-app',
         'integrations/gitlab',
         'integrations/bitbucket',
-        'integrations/stripe',
       ],
     },
     'changelog',

@@ -11,7 +11,7 @@ Cargoman Cloud uses a **two-layer security model** that combines tenant isolatio
 | Layer | Purpose | Mechanism |
 |-------|---------|-----------|
 | **Tenant Isolation** | Determines which tenant's data to access | Subdomain in URL |
-| **Authentication** | Verifies the caller's identity and permissions | Bearer token in header |
+| **Authentication** | Verifies the caller's identity and permissions | Bearer token in header (admin token or CMA token) |
 
 Both layers are required for any API request. A valid token without tenant context (or vice versa) will be rejected.
 
@@ -36,8 +36,8 @@ Both layers are required for any API request. A valid token without tenant conte
                               ▼
 ┌─────────────────────────────────────────────────────────────────┐
 │  2. Auth Middleware                                             │
-│     - Validates Bearer token                                    │
-│     - Checks token permissions                                  │
+│     - Validates Bearer token (admin token or CMA token)         │
+│     - Checks token permissions (owner/admin/viewer level)       │
 │     - Rejects if invalid (401 Unauthorized)                     │
 └─────────────────────────────────────────────────────────────────┘
                               │
@@ -62,6 +62,34 @@ https://{subdomain}.packages.cargoman.io
 Examples:
 - `https://acme.packages.cargoman.io` - Acme Corp's registry
 - `https://beta-corp.packages.cargoman.io` - Beta Corp's registry
+
+## Token Types
+
+The auth middleware accepts two types of Bearer tokens:
+
+### Root Admin Token
+
+The `ADMIN_TOKEN` set via environment variable during server setup. This token always has full **owner**-level access.
+
+### CMA Tokens
+
+CMA (Cargoman Management Admin) tokens are per-user credentials created in the admin UI. They use the `cma_` prefix and are assigned one of three levels:
+
+| Level | Permissions |
+|-------|-------------|
+| **Owner** | Full access to all operations + team management (create/revoke CMA tokens) |
+| **Admin** | Manage packages, customers, tokens, collections, and settings |
+| **Viewer** | Read-only access to all resources |
+
+Both token types are used identically in the `Authorization` header:
+
+```bash
+# Root admin token
+Authorization: Bearer $ADMIN_TOKEN
+
+# CMA token
+Authorization: Bearer cma_xY9kL2mN4pQ7rS1tU5vW8xZ3aB6cD9e
+```
 
 ## REST API Examples
 

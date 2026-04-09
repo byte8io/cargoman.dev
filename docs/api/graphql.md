@@ -24,14 +24,23 @@ Enable with `GRAPHQL_PLAYGROUND=true` and `GRAPHQL_INTROSPECTION=true`.
 
 ## Authentication
 
-Use the `Authorization` header:
+Use the `Authorization` header with either the root admin token or a CMA token generated in the admin UI:
 
 ```bash
+# Using the root admin token
 curl -X POST https://packages.example.com/graphql \
   -H "Authorization: Bearer $ADMIN_TOKEN" \
   -H "Content-Type: application/json" \
   -d '{"query": "{ customers { id name } }"}'
+
+# Using a CMA token
+curl -X POST https://packages.example.com/graphql \
+  -H "Authorization: Bearer cma_xY9kL2mN4pQ7rS1tU5vW8xZ3aB6cD9e" \
+  -H "Content-Type: application/json" \
+  -d '{"query": "{ customers { id name } }"}'
 ```
+
+CMA tokens respect their assigned level: **owner** and **admin** can execute both queries and mutations, while **viewer** tokens can only execute queries (mutations will return a `FORBIDDEN` error).
 
 ## Schema
 

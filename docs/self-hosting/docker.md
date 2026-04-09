@@ -15,7 +15,7 @@ version: '3.8'
 
 services:
   cargoman:
-    image: ghcr.io/byte8/cargoman:latest
+    image: ghcr.io/byte8io/cargoman:latest
     ports:
       - "8080:8080"
     environment:
@@ -86,7 +86,7 @@ For production with Cloudflare R2:
 ```yaml
 services:
   cargoman:
-    image: ghcr.io/byte8/cargoman:latest
+    image: ghcr.io/byte8io/cargoman:latest
     environment:
       DATABASE_URL: postgresql://cargoman:cargoman@db:5432/cargoman
       ADMIN_TOKEN: ${ADMIN_TOKEN}

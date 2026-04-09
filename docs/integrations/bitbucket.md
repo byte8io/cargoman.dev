@@ -118,4 +118,3 @@ For repositories behind SSO:
 
 - [GitHub integration](/docs/integrations/github)
 - [GitLab integration](/docs/integrations/gitlab)
-- [Stripe integration](/docs/integrations/stripe)

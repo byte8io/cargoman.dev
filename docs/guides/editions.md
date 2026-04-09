@@ -11,7 +11,6 @@ Cargoman offers four editions with progressive feature sets and usage limits.
 | | Community | Pro | Cloud | Enterprise |
 |---|-----------|-----|-------|------------|
 | **Hosting** | Self-hosted | Self-hosted | Managed | Dedicated |
-| **Price** | Free | $24/mo | $49/mo | $499/mo |
 | **Database** | SQLite | PostgreSQL | PostgreSQL | PostgreSQL |
 | **Storage Backend** | Filesystem | Filesystem (configurable) | S3/R2 | S3/R2 |
 | **Tenant Mode** | Single | Single | Multi-tenant | Single (dedicated) |
@@ -129,6 +128,6 @@ To upgrade from Community to Pro:
 
 ## Next Steps
 
-- [Plans & pricing](/docs/cloud/plans)
+- [Plans & pricing](https://cargoman.io/pricing)
 - [Configuration reference](/docs/getting-started/configuration)
 - [Self-hosting setup](/docs/self-hosting/docker)

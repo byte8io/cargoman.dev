@@ -85,12 +85,12 @@ Internal administration:
 
 | Tier | Type | Price | Features |
 |------|------|-------|----------|
-| Community | Self-hosted | Free | Basic registry, 5 packages |
+| Community | Self-hosted | Free | Basic registry, unlimited packages |
 | Pro | Self-hosted | $29/mo | Unlimited packages, GraphQL, analytics |
-| Cloud Starter | SaaS | $49/mo | Managed hosting, 20GB storage |
-| Cloud Scale | SaaS | $99/mo | 100GB storage, custom domain |
-| Cloud Business | SaaS | $199/mo | 500GB, SSO/LDAP, audit logs |
-| Enterprise | Dedicated | $499+/mo | Dedicated instance, SLA |
+| Cloud | SaaS | $59/mo | Managed hosting, 100GB storage |
+| Enterprise | Dedicated | $599+/mo | Dedicated instance, SLA |
+
+For full pricing details, see [cargoman.io/pricing](https://cargoman.io/pricing).
 
 ---
 

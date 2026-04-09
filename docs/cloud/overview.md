@@ -62,15 +62,7 @@ curl https://your-name.packages.cargoman.io/graphql \
 
 ## Plans
 
-| Feature | Community | Pro | Cloud | Enterprise |
-|---------|-----------|-----|-------|------------|
-| **Price** | Free | $24/mo | $49/mo | $499/mo |
-| **Storage** | 2 GB | 50 GB | 100 GB | Unlimited |
-| **Bandwidth** | 10 GB/mo | 500 GB/mo | ~1 TB/mo | Unlimited |
-| **Team Seats** | 3 | Unlimited | Unlimited | Unlimited |
-| **Support** | Community | Email | Priority | Dedicated + SLA |
-
-See [Plans & Pricing](/docs/cloud/plans) for the full comparison.
+See [Plans & Pricing](https://cargoman.io/pricing) for the full comparison of features, limits, and pricing across all tiers.
 
 ## Support
 
@@ -81,5 +73,5 @@ See [Plans & Pricing](/docs/cloud/plans) for the full comparison.
 
 ## Next Steps
 
-- [View plans and pricing](/docs/cloud/plans)
+- [View plans and pricing](https://cargoman.io/pricing)
 - [Set up custom domain](/docs/cloud/custom-domain)

@@ -6,6 +6,10 @@ sidebar_position: 3
 
 Cargoman uses a multi-token scoped system. Each customer can have multiple tokens with different permission levels, package restrictions, and expiration dates.
 
+:::note
+This page covers **customer tokens** used for Composer authentication. For admin API credentials (CMA tokens) used to manage the registry via REST and GraphQL APIs, see [Admin Credentials](/docs/guides/admin-credentials).
+:::
+
 ## Token Scopes
 
 | Scope | Permissions | Use Case |

@@ -20,7 +20,7 @@ version: '3.8'
 
 services:
   cargoman:
-    image: ghcr.io/byte8/cargoman:latest
+    image: ghcr.io/byte8io/cargoman:latest
     ports:
       - "8080:8080"
     environment:

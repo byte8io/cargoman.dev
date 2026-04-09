@@ -125,4 +125,3 @@ This is useful for webhook integrations with Stripe, Paddle, or your custom syst
 
 - [Manage tokens](/docs/guides/tokens)
 - [Subscription lifecycle](/docs/guides/subscriptions)
-- [Stripe integration](/docs/integrations/stripe)

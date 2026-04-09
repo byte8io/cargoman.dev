@@ -236,4 +236,3 @@ Target: < 1 hour
 ## Next Steps
 
 - [Set up webhooks](/docs/integrations/github)
-- [Configure Stripe integration](/docs/integrations/stripe)

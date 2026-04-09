@@ -4,7 +4,7 @@ sidebar_position: 2
 
 # REST API Reference
 
-Complete reference for the Cargoman REST API. All endpoints require admin authentication via the `Authorization: Bearer <ADMIN_TOKEN>` header unless noted otherwise.
+Complete reference for the Cargoman REST API. All endpoints require authentication via the `Authorization: Bearer <token>` header unless noted otherwise. The token can be either the root `ADMIN_TOKEN` (set via environment variable) or a CMA token generated in the admin UI. CMA token access depends on the token's level — **owner** and **admin** tokens have full write access, while **viewer** tokens are limited to read-only operations.
 
 ## Customers
 

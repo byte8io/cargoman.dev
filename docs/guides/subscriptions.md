@@ -141,6 +141,5 @@ GET /api/v1/customers/{id}
 
 ## Next Steps
 
-- [Stripe integration guide](/docs/integrations/stripe)
 - [Customer management](/docs/guides/customers)
 - [API reference](/docs/api/rest)

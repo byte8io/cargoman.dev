@@ -9,8 +9,8 @@ Cargoman provides three APIs for different use cases:
 | API | Purpose | Authentication |
 |-----|---------|----------------|
 | **Composer Protocol** | Package installation | Customer token |
-| **REST API** | Management operations | Admin token |
-| **GraphQL API** | Flexible queries | Admin token |
+| **REST API** | Management operations | Admin token or CMA token |
+| **GraphQL API** | Flexible queries | Admin token or CMA token |
 
 ## Base URLs
 
@@ -22,12 +22,33 @@ Cargoman provides three APIs for different use cases:
 
 ### Admin Token
 
-For REST and GraphQL APIs, use the `Authorization` header:
+For REST and GraphQL APIs, use the `Authorization` header with your admin token:
 
 ```bash
 curl https://packages.example.com/api/v1/packages \
   -H "Authorization: Bearer $ADMIN_TOKEN"
 ```
+
+The `ADMIN_TOKEN` is the root token set via environment variable during setup and has full owner-level access.
+
+### CMA Token
+
+CMA (Cargoman Management Admin) tokens are per-user credentials created in the admin UI. They work identically to the root admin token in the `Authorization` header:
+
+```bash
+curl https://packages.example.com/api/v1/packages \
+  -H "Authorization: Bearer cma_xY9kL2mN4pQ7rS1tU5vW8xZ3aB6cD9e"
+```
+
+CMA tokens have three permission levels:
+
+| Level | Permissions |
+|-------|-------------|
+| **Owner** | Full access + team management (create/revoke other CMA tokens) |
+| **Admin** | Manage packages, customers, tokens, collections, and settings |
+| **Viewer** | Read-only access to all resources |
+
+See [Admin Credentials](/docs/guides/admin-credentials) for details on creating and managing CMA tokens.
 
 ### Customer Token
 
